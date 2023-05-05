@@ -16,10 +16,7 @@ The data cannot be cached because each new writing test is generated as pseudo-r
 The application generates a log in the form of a CSV table, detailing the date, time of each event, duration of data set writing, error codes and error messages.
 
 # Build
-``
-make debug
-
-``
+`make debug`
 
 # Run
 `disk_latency_attestation /mnt /tmp/report.csv`
