@@ -1,13 +1,13 @@
 # How to install dependencies and build:
 #
 # GCC
-# sudo apt -y install build-essential clang-10
+# sudo apt -y install build-essential clang
 #
 # Libraries
 # sudo apt -y install libgoogle-perftools-dev
 #
 # Inatall stat and test tools
-# sudo apt-get install cloc valgrind clang-tools
+# sudo apt-get install cloc valgrind clang-tools cppcheck
 #
 # make release # or
 # make debug # or
@@ -20,8 +20,8 @@
 #
 
 # Define our suffix list for quick compilation
-.SUFFIXES:               # Delete the default suffixes
-.SUFFIXES: .c .o .h .d   # Define our suffix list
+.SUFFIXES:              # Delete the default suffixes
+.SUFFIXES: .c .o .h .d  # Define our suffix list
 
 #
 # Compiler flags
@@ -39,17 +39,20 @@ CFLAGS += $(DEFINES)
 
 EXE = disk_lattency_attestation
 
-# Если задан define PRODUCTION, то активируется режим, в которм
-# некоторые функции, существующие только для дополнительных исследований, не будут
-# выполняться. По-умолчанию режим активируется только для сборки production.
-# Чтобы активировать в отладочных режимах, исключив проверки и отключив счётчики
-# достаточно указать PRODUCTION= как переменную для make. Например:
+# If define PRODUCTION is set, then a mode is activated
+# in which some functions that exist only for additional
+# research will not be run. By default, the mode is activated
+# only for the production build.
+#
+# To activate in debug modes, excluding checks and disabling
+# counters, just specify PRODUCTION= as a variable for make.
+# For example:
 PRODUCTION ?= PRODUCTION
 
 STATIC = -static
 SRC = src
 STRIP = -s
-# Флаги дополнительных проверок. Must have!
+# Flags for additional checks. Must have!
 WFLAGS += -Wall -Wextra -Wpedantic -Wshadow
 WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
@@ -58,7 +61,7 @@ WFLAGS += -Wfloat-equal -Wundef -Wshadow
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
-# Если не clang, то значит эти опции для gcc
+# If it is not clang, then these options are for gcc
 ifneq ($(CC), clang)
 WFLAGS += -Wlogical-op
 endif
@@ -98,7 +101,7 @@ ASM = $(SRCS:.c=.asm)
 #
 STZDIR = $(SRC)/sanitize
 STZEXE = $(STZDIR)/$(EXE)
-STZOBJS = $(addprefix $(STZDIR)/, $(OBJS))
+STZOBJS = $(addprefix $(STZDIR)/, $(notdir $(OBJS)))
 STZDEP = $(STZOBJS:.o=.d)
 STZLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(STZDIR))
 STZDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(STZDIR))
@@ -114,7 +117,7 @@ endif
 #
 # Project files
 #
-UNITSRCS = basic_trend.c
+UNITSRCS = basic.c
 # Exclude a file
 UNITOBJS = $(UNITSRCS:.c=.o)
 
@@ -133,15 +136,16 @@ endif
 # Debug build settings
 #
 DBGDIR = $(SRC)/debug
-DBGEXE = $(EXE)
+DBGEXE = $(DBGDIR)/$(EXE)
 DBGOBJS = $(addprefix $(DBGDIR)/, $(notdir $(OBJS)))
 DBGDEP = $(DBGOBJS:.o=.d)
 DBGLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGDIR))
 DBGDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(DBGDIR))
 DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
-# Активация профайлера Gprof. Некорректно работает с Valgrind.
-# Лучше использовать Callgrind - формат графа вызовов поддерживается
-# средствами визуализации, например, kcachegrind.
+# Activation of the Gprof profiler.
+# Works incorrectly with Valgrind.
+# It is better to use Callgrind - the call graph format
+# is supported by visualization tools like kcachegrind.
 #DBGCFLAGS += -pg
 
 #
@@ -149,13 +153,13 @@ DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
 #
 PRODDIR = $(SRC)/production
 PRODEXE = $(PRODDIR)/$(EXE)
-PRODOBJS = $(addprefix $(PRODDIR)/, $(OBJS))
+PRODOBJS = $(addprefix $(PRODDIR)/, $(notdir $(OBJS)))
 PRODDEP = $(PRODOBJS:.o=.d)
 PRODLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(PRODDIR))
 PRODDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(PRODDIR))
 PRODCFLAGS = -O3 -funroll-loops -DNDEBUG -D$(PRODUCTION)
 PRODCFLAGS += -march=native
-# Если статическая сборка, то добавить флаги
+# If static build, then add flags
 ifdef STATIC
 PRODLDFLAGS += -lm -lc
 endif
@@ -168,17 +172,17 @@ endif
 #
 RELDIR = $(SRC)/release
 RELEXE = $(RELDIR)/$(EXE)
-RELOBJS = $(addprefix $(RELDIR)/, $(OBJS))
+RELOBJS = $(addprefix $(RELDIR)/, $(notdir $(OBJS)))
 RELDEP = $(RELOBJS:.o=.d)
 RELLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELDIR))
 RELDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(RELDIR))
 RELCFLAGS = -O3 -funroll-loops -DNDEBUG
 RELCFLAGS += -march=native
-# Если статическая сборка, то добавить флаги
+# If static build, then add flags
 ifdef STATIC
 RELLDFLAGS += -lm -lc
 endif
-# Если не clang, то значит эти опции для gcc
+# If it is not clang, then these options are for gcc
 ifneq ($(CC), clang)
 RELWFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wmissing-format-attribute
 RELCFLAGS += -flto
@@ -208,7 +212,7 @@ $(STZEXE): $(STZOBJS)
 
 -include $(STZDEP)
 
-$(STZDIR)/%.o: %.c
+$(STZDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(STZDIR)
 	@$(CC) -MM $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(STZDIR\)\//' > $(@D)/$(*F).d
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(STZCFLAGS) $(WFLAGS) -o $@ $<
@@ -222,12 +226,14 @@ debug: $(DBGEXE)
 $(DBGEXE): $(DBGOBJS)
 	@$(CC) $(CFLAGS) $(DBGCFLAGS) $(DBGLIBPATH) $(DBGDYNLIB) $(WFLAGS) -o $(DBGEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
+	@cp $@ ./
+	@echo "$@ moved to current directory"
 
 -include $(DBGDEP)
 
 $(DBGDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(DBGDIR)
-	@$(CC) -MM $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(DBGDIR\)\//' > $(@D)/$(@F).d
+	@$(CC) -MM $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(DBGDIR\)\//' > $(@D)/$(*F).d
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(DBGCFLAGS) $(WFLAGS) -o $@ $<
 	@echo $<" compiled."
 
@@ -240,10 +246,12 @@ production: $(PRODEXE)
 $(PRODEXE): $(PRODOBJS)
 	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(PRODLIBPATH) $(PRODDYNLIB) $(PRODLDFLAGS) -o $(PRODEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
+	@cp $@ ./
+	@echo "$@ moved to current directory"
 
 -include $(PRODDEP)
 
-$(PRODDIR)/%.o: %.c
+$(PRODDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(PRODDIR)
 	@$(CC) -MM $(INCPATH) $(CFLAGS) $(PRODCFLAGS) $< | sed '1s/^/$$\(PRODDIR\)\//' > $(@D)/$(*F).d
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(PRODCFLAGS) -o $@ $<
@@ -259,10 +267,12 @@ release: $(RELEXE)
 $(RELEXE): $(RELOBJS)
 	@$(CC) $(CFLAGS) $(WFLAGS) $(STATIC) $(STRIP) $(RELLIBPATH) $(RELDYNLIB) $(RELLDFLAGS) -o $(RELEXE) $^ $(LDFLAGS)
 	@echo "$@ linked."
+	@cp $@ ./
+	@echo "$@ moved to current directory"
 
 -include $(RELDEP)
 
-$(RELDIR)/%.o: %.c
+$(RELDIR)/%.o: $(SRC)/%.c
 	@mkdir -p $(RELDIR)
 	@$(CC) -MM $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) $< | sed '1s/^/$$\(RELDIR\)\//' > $(@D)/$(*F).d
 	@$(CC) -c $(INCPATH) $(CFLAGS) $(WFLAGS) $(RELWFLAGS) $(RELCFLAGS) -o $@ $<
@@ -280,7 +290,7 @@ $(UNITEXE): $(UNITOBJS)
 
 -include $(UNITDEP)
 
-$(UNITDIR)/%.o: %.c
+$(UNITDIR)/%.o: $(SRC)/%.c
 	mkdir -p $(UNITDIR)
 	$(CC) -MM $(INCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) $< | sed '1s/^/$$\(UNITDIR\)\//' > $(@D)/$(*F).d
 	$(CC) -c $(INCPATH) $(CFLAGS) $(UNITCFLAGS) $(WFLAGS) -o $@ $<
@@ -311,7 +321,7 @@ remake: clean all
 test: sanitize clang-analyzer cachegrind callgrind massif cppcheck memtest perf
 
 cppcheck:
-	cppcheck --enable=all --platform=unix64 --std=c11 --std=posix -q --force --inconclusive .
+	cppcheck --enable=all --platform=unix64 --std=c11 -q --force --inconclusive .
 
 memtest: debug
 	valgrind -v --tool=memcheck --leak-check=full --leak-resolution=high --undef-value-errors=yes --show-reachable=yes --num-callers=20 $(DBGDIR)/$(EXE) $(ARGS)
@@ -354,7 +364,7 @@ cloc:
 
 # Character | prevent threading with clean
 clean: | clean-preproc clean-asm
-	rm -rf *.out.* doc $(STZDEP) $(DBGDEP) $(PRODDEP) $(RELDEP) \
+	@rm -rf *.out.* doc $(STZDEP) $(DBGDEP) $(PRODDEP) $(RELDEP) \
 		$(DBGEXE) $(STZEXE) $(PRODEXE) $(RELEXE) \
 		$(STZOBJS) $(DBGOBJS) $(PRODOBJS) $(RELOBJS)
 	@test -d $(STZDIR) && rm -d $(STZDIR) || true
