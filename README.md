@@ -5,9 +5,9 @@ Disk Latency Attestation is a process of verifying and providing evidence of the
 The attestation process can help identify and diagnose performance issues such as slow read and write speeds, high latency, and excessive I/O wait times. It can also be used to validate compliance with service-level agreements (SLAs) that specify the expected performance of storage systems.
 
 # Disk Latency Attestation Tool
-A simple yet effective tool to track storage latency during write operations.
+A simple yet effective tool to track disk storage latency during write operations.
 
-This utility operates as a daemon in the RAM, generates random data and writes it as a file to the specified storage for a certain intervals, measuring the time it took to write a file of a defined size.
+This utility operates as a daemon in the RAM, generates random data and writes it as a file to the specified disk storage for a certain intervals, measuring the time it took to write a file of an identical size in every reiteration.
 
 The data cannot be cached because each new writing test is generated as pseudo-random data.
 
