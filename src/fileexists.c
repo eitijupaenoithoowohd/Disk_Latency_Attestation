@@ -1,4 +1,4 @@
-#include "disk_delay_of_writes.h"
+#include "main.h"
 
 /**
  * Check if a file exist using fopen() function

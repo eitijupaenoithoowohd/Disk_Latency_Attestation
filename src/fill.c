@@ -1,4 +1,4 @@
-#include "disk_delay_of_writes.h"
+#include "main.h"
 
 void fill_1_MB_buffer_with_random_data(
     uint8_t *buffer,
