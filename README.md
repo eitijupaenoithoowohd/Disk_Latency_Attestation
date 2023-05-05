@@ -12,3 +12,9 @@ This utility operates as a daemon in the RAM, generates random data and writes i
 The data cannot be cached because each new writing test is generated as pseudo-random data.
 
 The application generates a log in the form of a CSV table, detailing the date, time of each event, duration of data set writing, error codes and error messages.
+
+# Build
+`make debug`
+
+# Run
+`disk_latency_attestation /mnt /tmp/report.csv`
