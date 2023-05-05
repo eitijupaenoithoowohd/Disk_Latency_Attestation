@@ -1,5 +1,5 @@
 /**
- * This C program ...
+ * Main .h file for main.c
  *
  */
 
@@ -26,15 +26,15 @@
 #define RESEARCH_QUANTITY 5
 #define INTERVAL 10     // Interval in seconds between researche
 
-/// Статус выхода из функций
-/// Оформлен в виде перечисления
+/// Function exit status
+/// Designed as an enum
 typedef enum
 {
-    /// Провал
-    FAILURE, // Действительное значение 0
+    /// In case of fail
+    FAILURE, // Actual value 0
 
-    /// Успех
-    SUCCESS, // Действительное значение 1
+    /// In case of success
+    SUCCESS, // Actual value 1
 
 } Return;
 

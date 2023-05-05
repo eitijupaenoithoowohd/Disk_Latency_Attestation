@@ -1,13 +1,13 @@
 # How to install dependencies and build:
 #
 # GCC
-# sudo apt -y install build-essential clang-10
+# sudo apt -y install build-essential clang
 #
 # Libraries
 # sudo apt -y install libgoogle-perftools-dev
 #
 # Inatall stat and test tools
-# sudo apt-get install cloc valgrind clang-tools
+# sudo apt-get install cloc valgrind clang-tools cppcheck
 #
 # make release # or
 # make debug # or
@@ -20,8 +20,8 @@
 #
 
 # Define our suffix list for quick compilation
-.SUFFIXES:                    # Delete the default suffixes
-.SUFFIXES: .c .o .h .d .o.d   # Define our suffix list
+.SUFFIXES:              # Delete the default suffixes
+.SUFFIXES: .c .o .h .d  # Define our suffix list
 
 #
 # Compiler flags
@@ -39,17 +39,20 @@ CFLAGS += $(DEFINES)
 
 EXE = disk_lattency_attestation
 
-# Если задан define PRODUCTION, то активируется режим, в которм
-# некоторые функции, существующие только для дополнительных исследований, не будут
-# выполняться. По-умолчанию режим активируется только для сборки production.
-# Чтобы активировать в отладочных режимах, исключив проверки и отключив счётчики
-# достаточно указать PRODUCTION= как переменную для make. Например:
+# If define PRODUCTION is set, then a mode is activated
+# in which some functions that exist only for additional
+# research will not be run. By default, the mode is activated
+# only for the production build.
+#
+# To activate in debug modes, excluding checks and disabling
+# counters, just specify PRODUCTION= as a variable for make.
+# For example:
 PRODUCTION ?= PRODUCTION
 
 TCMALLOC = -ltcmalloc_minimal -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free
 STATIC = -static
 STRIP = -s
-# Флаги дополнительных проверок. Must have!
+# Flags for additional checks. Must have!
 WFLAGS += -Wall -Wextra -Wpedantic -Wshadow
 WFLAGS += -Wconversion -Wsign-conversion -Winit-self -Wunreachable-code -Wformat-y2k
 WFLAGS += -Wformat-nonliteral -Wformat-security -Wmissing-include-dirs
@@ -58,7 +61,7 @@ WFLAGS += -Wfloat-equal -Wundef -Wshadow
 WFLAGS += -Wbad-function-cast -Wcast-qual -Wcast-align
 WFLAGS += -Wwrite-strings
 WFLAGS += -Winline
-# Если не clang, то значит эти опции для gcc
+# If it is not clang, then these options are for gcc
 ifneq ($(CC), clang)
 WFLAGS += -Wlogical-op
 endif
@@ -100,8 +103,8 @@ STZDIR = sanitize
 STZEXE = $(STZDIR)/$(EXE)
 STZOBJS = $(addprefix $(STZDIR)/, $(OBJS))
 STZDEP = $(STZOBJS:.o=.d)
-STZLIBPATH = $(foreach d,$(LIBPATH),-L$d/debug)
-STZDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/debug)
+STZLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(STZDIR))
+STZDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(STZDIR))
 STZCFLAGS += -fsanitize=address -g -O0 -DDEBUG
 ifdef STATIC
 STZCFLAGS += -static-libasan
@@ -114,7 +117,7 @@ endif
 #
 # Project files
 #
-UNITSRCS = basic_trend.c
+UNITSRCS = basic.c
 # Exclude a file
 UNITOBJS = $(UNITSRCS:.c=.o)
 
@@ -122,8 +125,8 @@ UNITDIR = unittests
 UNITEXE = $(UNITDIR)/$(EXE)
 UNITPATH = $(addprefix $(UNITDIR)/, $(UNITOBJS))
 UNITDEP = $(UNITPATH:.o=.d)
-UNITLIBPATH = $(foreach d,$(LIBPATH),-L$d/debug)
-UNITDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/debug)
+UNITLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(UNITDIR))
+UNITDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(UNITDIR))
 UNITCFLAGS += -DUNITTEST -g -O0 -DDEBUG
 ifdef STATIC
 UNITCFLAGS += -static-libasan
@@ -136,13 +139,13 @@ DBGDIR = debug
 DBGEXE = $(DBGDIR)/$(EXE)
 DBGOBJS = $(addprefix $(DBGDIR)/, $(OBJS))
 DBGDEP = $(DBGOBJS:.o=.d)
-DBGHDR = $(DBGOBJS:.o=.o.d)
-DBGLIBPATH = $(foreach d,$(LIBPATH),-L$d/debug)
-DBGDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/debug)
+DBGLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(DBGDIR))
+DBGDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(DBGDIR))
 DBGCFLAGS += -g -ggdb -ggdb1 -ggdb2 -ggdb3 -O0 -DDEBUG
-# Активация профайлера Gprof. Некорректно работает с Valgrind.
-# Лучше использовать Callgrind - формат графа вызовов поддерживается
-# средствами визуализации, например, kcachegrind.
+# Activation of the Gprof profiler.
+# Works incorrectly with Valgrind.
+# It is better to use Callgrind - the call graph format
+# is supported by visualization tools like kcachegrind.
 #DBGCFLAGS += -pg
 
 #
@@ -152,11 +155,11 @@ PRODDIR = production
 PRODEXE = $(PRODDIR)/$(EXE)
 PRODOBJS = $(addprefix $(PRODDIR)/, $(OBJS))
 PRODDEP = $(PRODOBJS:.o=.d)
-PRODLIBPATH = $(foreach d,$(LIBPATH),-L$d/release)
-PRODDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/release)
+PRODLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(PRODDIR))
+PRODDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(PRODDIR))
 PRODCFLAGS = -O3 -funroll-loops -DNDEBUG -D$(PRODUCTION)
 PRODCFLAGS += -march=native
-# Если статическая сборка, то добавить флаги
+# If static build, then add flags
 ifdef STATIC
 PRODLDFLAGS += -lm -lc
 endif
@@ -171,15 +174,15 @@ RELDIR = release
 RELEXE = $(RELDIR)/$(EXE)
 RELOBJS = $(addprefix $(RELDIR)/, $(OBJS))
 RELDEP = $(RELOBJS:.o=.d)
-RELLIBPATH = $(foreach d,$(LIBPATH),-L$d/release)
-RELDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/release)
+RELLIBPATH = $(foreach d,$(LIBPATH),-L$d/$(RELDIR))
+RELDYNLIB = $(foreach d,$(LIBPATH),-Wl,-rpath,$d/$(RELDIR))
 RELCFLAGS = -O3 -funroll-loops -DNDEBUG
 RELCFLAGS += -march=native
-# Если статическая сборка, то добавить флаги
+# If static build, then add flags
 ifdef STATIC
 RELLDFLAGS += -lm -lc
 endif
-# Если не clang, то значит эти опции для gcc
+# If it is not clang, then these options are for gcc
 ifneq ($(CC), clang)
 RELWFLAGS += -Wsuggest-attribute=const -Wsuggest-attribute=pure -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wmissing-format-attribute
 RELCFLAGS += -flto
@@ -356,7 +359,6 @@ cloc:
 # Character | prevent threading with clean
 clean: | clean-preproc clean-asm
 	@rm -rf *.out.* doc $(STZDEP) $(DBGDEP) $(PRODDEP) $(RELDEP) \
-		$(STZHDR) $(DBGHDR) $(PRODHDR) $(RELHDR) \
 		$(DBGEXE) $(STZEXE) $(PRODEXE) $(RELEXE) \
 		$(STZOBJS) $(DBGOBJS) $(PRODOBJS) $(RELOBJS)
 	@test -d $(STZDIR) && rm -d $(STZDIR) || true

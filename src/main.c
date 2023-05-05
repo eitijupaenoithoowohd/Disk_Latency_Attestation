@@ -1,19 +1,21 @@
 /**
- * This is simple C program
+ * Initial file with main() function
  *
  */
 
-#include "disk_delay_of_writes.h"
+#include "main.h"
 
 int main(const int argc, char ** const argv)
 {
-    /// Статус, который будет передан return() перед выходом.
-    /// По умолчанию - функция отработала без ошибок.
+    /// Status to be passed to return() before exiting.
+    /// The function has been worked without errors by default.
     Return status = SUCCESS;
 
+    // Initialize basic variables
     ssize_t position = 0;
     typedef struct Event events[RESEARCH_QUANTITY];
     events event;
+
     // Initialize the structure with zeroes
     memset(&event,0,sizeof(events));
 
