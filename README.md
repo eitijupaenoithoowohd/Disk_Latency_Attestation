@@ -18,14 +18,23 @@ The application generates a log in the form of a CSV table, detailing the date, 
 # Build
 
 Build and compile tools
-`sudo apt -y install build-essential`
+```
+sudo apt -y install build-essential
+```
 
 Get source code
-`git clone https://github.com/eitijupaenoithoowohd/disk_latency_attestation.git`
+```
+git clone https://github.com/eitijupaenoithoowohd/disk_latency_attestation.git
+```
 
 Build
-`cd disk_latency_attestation`
-`make`
+```
+cd disk_latency_attestation
+make
+```
 
 # Run
-`./disk_latency_attestation /mnt /tmp/report.csv`
+```
+./disk_latency_attestation /mnt /tmp/report.csv
+```
+
