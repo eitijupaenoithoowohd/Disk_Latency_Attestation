@@ -28,7 +28,8 @@ int main(const int argc, char ** const argv)
     const char *reportfile = argv[2];;
     const char *filename="sample.bin";
     const size_t path_len = strlen(argv[1]) + strlen(filename) + 2;
-    // Path to the sample file on monitored partition
+
+    // Path to the sample file on monitored storage
     char *path = NULL;
     if ((path = (char*)malloc(path_len * sizeof(char))) == NULL)
     {

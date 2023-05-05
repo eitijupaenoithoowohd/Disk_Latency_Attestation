@@ -37,7 +37,7 @@ CFLAGS += $(DEFINES)
 # libc lib for static
 #LDFLAGS += -lc
 
-EXE = disk_delay_of_writes
+EXE = disk_lattency_attestation
 
 # Если задан define PRODUCTION, то активируется режим, в которм
 # некоторые функции, существующие только для дополнительных исследований, не будут
