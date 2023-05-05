@@ -16,7 +16,16 @@ The data cannot be cached because each new writing test is generated as pseudo-r
 The application generates a log in the form of a CSV table, detailing the date, time of each event, duration of data set writing, error codes and error messages.
 
 # Build
-`make debug`
+
+Build and compile tools
+`sudo apt -y install build-essential`
+
+Get source code
+`git clone https://github.com/eitijupaenoithoowohd/disk_latency_attestation.git`
+
+Build
+`cd disk_latency_attestation`
+`make`
 
 # Run
-`disk_latency_attestation /mnt /tmp/report.csv`
+`./disk_latency_attestation /mnt /tmp/report.csv`
