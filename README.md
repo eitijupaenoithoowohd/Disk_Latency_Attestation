@@ -1,5 +1,3 @@
-# DRAFT CODE with less documentation
-
 # Latency Attestation
 
 Disk Latency Attestation is a process of verifying and providing evidence of the performance and latency characteristics of a disk storage system. It involves running tests or measurements to assess the time taken for a storage device to complete read and write operations and comparing the results against predetermined thresholds.
@@ -37,4 +35,3 @@ make
 ```
 ./disk_latency_attestation /mnt /tmp/report.csv
 ```
-
