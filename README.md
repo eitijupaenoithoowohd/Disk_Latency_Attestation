@@ -12,7 +12,7 @@ This utility operates as a daemon in the RAM, generates random data and writes i
 
 The data cannot being cached because for each new test of writing pseudo-random data is generated.
 
-The application generates a log in the form of a CSV table, detailing the date, time of each event, duration of data set writing, error codes and error messages.
+The application generates a log in the form of a CSV table, detailing the date, time of each event, duration of dataset writing, error codes and error messages.
 
 # Build
 
