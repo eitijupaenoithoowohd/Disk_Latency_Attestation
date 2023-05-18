@@ -16,7 +16,7 @@ The application generates a log in the form of a CSV table, detailing the date, 
 
 # Build
 
-Install build and compile tools in Linux
+Install build and compile tools on Linux
 ```
 sudo apt -y install build-essential
 ```

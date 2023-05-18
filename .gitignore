@@ -1,0 +1,4 @@
+src/*/
+cacheg*
+callg*
+massif*
